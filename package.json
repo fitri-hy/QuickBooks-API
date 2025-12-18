@@ -1,0 +1,17 @@
+{
+  "name": "quickbook-api",
+  "version": "1.0.0",
+  "description": "API for accessing and displaying data from QuickBooks Desktop Enterprise 12.0 using QBFC12 SDK",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": ["quickbooks", "qbfc12", "api", "nodejs", "express"],
+  "author": "Fitri HY",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "express": "^5.2.1"
+  }
+}
