@@ -43,14 +43,14 @@ npm start
 
 The server runs at: `http://localhost:3000`
 
-## API Endpoints
+## API Endpoints (Invoices)
 
 | Endpoint        | Method | Query Parameters                                     | Description                                                                             |
 | --------------- | ------ | ---------------------------------------------------- | --------------------------------------------------------------------------------------- |
 | `/api/invoices` | GET    | `customer`, `from`, `to`, `page`, `limit` (optional) | Retrieves a list of invoices with optional filters for customer, dates, and pagination. |
 
 
-## Query Parameters
+### Query Parameters
 
 | Parameter  | Type                | Required | Default | Description               |
 | ---------- | ------------------- | -------- | ------- | ------------------------- |
@@ -60,7 +60,7 @@ The server runs at: `http://localhost:3000`
 | `page`     | integer             | Optional | 1       | Pagination page number.   |
 | `limit`    | integer             | Optional | 50      | Number of items per page. |
 
-## Example Requests
+### Example Requests
 
 ```http
 GET /api/invoices
@@ -71,7 +71,7 @@ GET /api/invoices?page=1&limit=50
 GET /api/invoices?customer=John&from=2025-12-01&to=2025-12-31&page=2&limit=100
 ```
 
-## Example JSON Response
+### Example JSON Response
 
 ```json
 {
