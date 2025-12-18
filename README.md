@@ -74,31 +74,44 @@ GET /api/invoices?customer=John&from=2025-12-01&to=2025-12-31&page=2&limit=100
 ## Example JSON Response
 
 ```json
-[
-  {
-    "TxnID": "1-1766029608",
-    "TxnNumber": 1,
-    "TxnDate": "2025-12-18",
-    "Customer": "Testing",
-    "CustomerListID": "8000001D-123456789",
-    "SalesRep": "John Doe",
-    "Terms": "Net 30",
-    "Memo": "Invoice memo",
-    "BillAddress": "Jl. Contoh No.1",
-    "ShipAddress": "Jl. Contoh No.2",
-    "Subtotal": 500,
-    "SalesTaxTotal": 50,
-    "BalanceRemaining": 550,
-    "LineItems": [
-      {
-        "ItemRef": "Product 1",
-        "Desc": "Product description",
-        "Quantity": 1,
-        "Amount": 500
-      }
-    ]
-  }
-]
+{
+  "page": 1,
+  "limit": 50,
+  "totalItems": 2,
+  "totalPages": 1,
+  "data": [
+    {
+      "BillAddress": "12 Sparrow St, Jakarta",
+      "ShipAddress": "45 Orchid St, Jakarta",
+      "BalanceRemaining": 1200,
+      "TxnNumber": 101,
+      "SalesTaxTotal": 120,
+      "Subtotal": 1080,
+      "Terms": "Net 30",
+      "TxnDate": "2025-12-18",
+      "LineItems": [
+        {
+          "Amount": 1080,
+          "ItemRef": "Dell XPS 15 Laptop",
+          "Quantity": 2,
+          "Desc": "Laptop for office use"
+        }
+      ],
+      "SalesRep": "Andy Wijaya",
+      "TxnID": "1-987654321",
+      "Customer": {
+        "Phone": "+6281234567890",
+        "ListID": "80000002-987654321",
+        "CompanyName": "Maju Jaya Ltd.",
+        "ShipAddress": "45 Orchid St, Jakarta",
+        "FullName": "Budi Santoso",
+        "BillAddress": "12 Sparrow St, Jakarta",
+        "Email": "budi.santoso@majujaya.com"
+      },
+      "Memo": "Payment via bank transfer"
+    }
+  ]
+}
 ```
 
 ## Contributing

@@ -20,20 +20,54 @@ class QB12App
             requestMsgSet.Attributes.OnError = ENRqOnError.roeContinue;
 
             ArrayList invoiceDataList = new ArrayList();
+            string filterCustomer = args.Length >= 1 ? args[0] : null;
 
-            // Query Invoice
+            // ===============================
+            // 1. Query all customers
+            // ===============================
+            ICustomerQuery customerQuery = requestMsgSet.AppendCustomerQueryRq();
+            customerQuery.IncludeRetElementList.Add("ListID");
+            customerQuery.IncludeRetElementList.Add("FullName");
+            customerQuery.IncludeRetElementList.Add("CompanyName");
+            customerQuery.IncludeRetElementList.Add("Phone");
+            customerQuery.IncludeRetElementList.Add("Email");
+            customerQuery.IncludeRetElementList.Add("BillAddress");
+            customerQuery.IncludeRetElementList.Add("ShipAddress");
+
+            // ===============================
+            // 2. Query all invoices
+            // ===============================
             IInvoiceQuery invoiceQuery = requestMsgSet.AppendInvoiceQueryRq();
             invoiceQuery.IncludeLineItems.SetValue(true);
 
-            // Filter
-            string filterCustomer = args.Length >= 1 ? args[0] : null;
-
             IMsgSetResponse responseMsgSet = sess.DoRequests(requestMsgSet);
-            IResponse response = responseMsgSet.ResponseList.GetAt(0);
 
-            if (response.Detail != null)
+            // ===============================
+            // Build customer lookup
+            // ===============================
+            Hashtable customerMap = new Hashtable();
+            IResponse customerResponse = responseMsgSet.ResponseList.GetAt(0);
+            if (customerResponse.Detail != null)
             {
-                IInvoiceRetList list = response.Detail as IInvoiceRetList;
+                ICustomerRetList custList = customerResponse.Detail as ICustomerRetList;
+                if (custList != null)
+                {
+                    for (int i = 0; i < custList.Count; i++)
+                    {
+                        ICustomerRet cust = custList.GetAt(i);
+                        string custName = cust.FullName != null ? cust.FullName.GetValue() : "";
+                        customerMap[custName] = cust;
+                    }
+                }
+            }
+
+            // ===============================
+            // Parse invoices
+            // ===============================
+            IResponse invoiceResponse = responseMsgSet.ResponseList.GetAt(1);
+            if (invoiceResponse.Detail != null)
+            {
+                IInvoiceRetList list = invoiceResponse.Detail as IInvoiceRetList;
                 if (list != null)
                 {
                     for (int i = 0; i < list.Count; i++)
@@ -50,12 +84,29 @@ class QB12App
 
                             Hashtable txnData = new Hashtable();
 
-                            // Header Invoice
+                            // ===============================
+                            // Customer detail (di atas)
+                            // ===============================
+                            Hashtable customerData = new Hashtable();
+                            if (customerMap.ContainsKey(customerName))
+                            {
+                                ICustomerRet cust = (ICustomerRet)customerMap[customerName];
+                                customerData["ListID"] = cust.ListID != null ? cust.ListID.GetValue() : "";
+                                customerData["FullName"] = cust.FullName != null ? cust.FullName.GetValue() : "";
+                                customerData["CompanyName"] = cust.CompanyName != null ? cust.CompanyName.GetValue() : "";
+                                customerData["Phone"] = cust.Phone != null ? cust.Phone.GetValue() : "";
+                                customerData["Email"] = cust.Email != null ? cust.Email.GetValue() : "";
+                                customerData["BillAddress"] = cust.BillAddress != null ? cust.BillAddress.Addr1.GetValue() : "";
+                                customerData["ShipAddress"] = cust.ShipAddress != null ? cust.ShipAddress.Addr1.GetValue() : "";
+                            }
+                            txnData["Customer"] = customerData;
+
+                            // ===============================
+                            // Invoice header
+                            // ===============================
                             txnData["TxnID"] = txn.TxnID != null ? txn.TxnID.GetValue() : "";
                             txnData["TxnNumber"] = txn.TxnNumber != null ? txn.TxnNumber.GetValue() : 0;
                             txnData["TxnDate"] = txn.TxnDate != null ? txn.TxnDate.GetValue().ToString("yyyy-MM-dd") : "";
-                            txnData["Customer"] = customerName;
-                            txnData["CustomerListID"] = txn.CustomerRef != null ? txn.CustomerRef.ListID.GetValue() : "";
                             txnData["SalesRep"] = (txn.SalesRepRef != null && txn.SalesRepRef.FullName != null) ? txn.SalesRepRef.FullName.GetValue() : "";
                             txnData["Terms"] = (txn.TermsRef != null && txn.TermsRef.FullName != null) ? txn.TermsRef.FullName.GetValue() : "";
                             txnData["Memo"] = txn.Memo != null ? txn.Memo.GetValue() : "";
@@ -65,7 +116,9 @@ class QB12App
                             txnData["SalesTaxTotal"] = txn.SalesTaxTotal != null ? txn.SalesTaxTotal.GetValue() : 0;
                             txnData["BalanceRemaining"] = txn.BalanceRemaining != null ? txn.BalanceRemaining.GetValue() : 0;
 
+                            // ===============================
                             // Line Items
+                            // ===============================
                             ArrayList items = new ArrayList();
                             if (txn.ORInvoiceLineRetList != null)
                             {
@@ -94,7 +147,7 @@ class QB12App
                 }
             }
 
-            // Serialize to JSON with pretty-print.
+            // Serialize JSON
             JavaScriptSerializer js = new JavaScriptSerializer();
             string json = js.Serialize(invoiceDataList);
             Console.WriteLine(PrettyPrintJson(json));
@@ -119,7 +172,6 @@ class QB12App
         }
     }
 
-    // Pretty-print helper
     static string PrettyPrintJson(string json)
     {
         int indent = 0;
